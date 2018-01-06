@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bbs">
+	
+	<select id="selectBbsList" parameterType="hashmap" resultType="hashmap">
+		<![CDATA[
+			SELECT  BBS_SEQ,  TITLE,  HIT_CNT,  IN_ID,  IN_DT
+			FROM  TB_BBS 
+			ORDER BY BBS_SEQ DESC
+		]]>
+	</select>
+	
+	<insert id="insertBbs" parameterType="hashmap" useGeneratedKeys="true" keyProperty="BBS_SEQ">
+	<selectKey keyProperty="BBS_SEQ" resultType="string" order="BEFORE">
+        SELECT BBS_SEQ.NEXTVAL FROM DUAL
+    </selectKey>
+
+    <![CDATA[
+        INSERT INTO TB_BBS
+        (
+            BBS_SEQ,
+            TITLE,
+            CONTENTS,
+            HIT_CNT,
+            IN_ID,
+            IN_DT
+        )
+        VALUES
+        (
+            #{BBS_SEQ},
+            #{TITLE},
+            #{CONTENTS},
+            0,
+            #{IN_ID},
+            SYSDATE
+        )
+    ]]>
+	</insert>
+	<insert id="insertFile" parameterType="hashmap">
+    <![CDATA[
+        INSERT INTO TB_BBSFILE
+        (
+            BBSFILE_SEQ,
+            BBS_SEQ,
+            FILE_NAME,
+            FILE_NAME_DB,
+            FILE_SIZE,
+            IN_ID
+        )
+        VALUES
+        (
+            BBSFILE_SEQ.NEXTVAL,
+            #{BBS_SEQ,jdbcType=INTEGER} ,
+            #{FILE_NAME,jdbcType=VARCHAR},
+            #{FILE_NAME_DB,jdbcType=VARCHAR},
+            #{FILE_SIZE,jdbcType=VARCHAR},
+            #{IN_ID,jdbcType=VARCHAR}
+        )
+    ]]>
+	</insert>
+	<select id="selectFileList" parameterType="hashmap" resultType="hashmap">
+	    <![CDATA[
+	        SELECT
+	            BBSFILE_SEQ,
+	            FILE_NAME_DB,
+	            ROUND(FILE_SIZE/1024,1) AS FILE_SIZE
+	        FROM
+	            TB_BBSFILE
+	        WHERE
+	            BBS_SEQ = #{BBS_SEQ}
+	    ]]>
+	</select>
+
+	<update id="updateHitCnt" parameterType="hashmap">
+    <![CDATA[
+        UPDATE TB_BBS
+        SET
+            HIT_CNT = NVL(HIT_CNT, 0) + 1
+        WHERE
+            BBS_SEQ = #{BBS_SEQ,jdbcType=INTEGER}   
+    ]]>
+</update>
+ 
+<select id="selectBbsDetail" parameterType="hashmap" resultType="hashmap">
+    <![CDATA[
+        SELECT
+            BBS_SEQ,
+            HIT_CNT,
+            IN_ID,
+            IN_DT,
+            TITLE,
+            CONTENTS
+        FROM
+            TB_BBS
+        WHERE
+            BBS_SEQ = #{BBS_SEQ,jdbcType=INTEGER}  
+    ]]>
+</select>
+
+	
+</mapper>
